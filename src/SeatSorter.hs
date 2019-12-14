@@ -1,12 +1,11 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+
 module SeatSorter where
 
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Maybe
-import qualified Data.List.NonEmpty as NE
 import qualified Data.List as L
-import Data.List.NonEmpty (NonEmpty(..), (<|))
 import qualified Data.Text as T
 import Data.Text (Text)
 import Text.Megaparsec
@@ -23,12 +22,11 @@ type EventSectionRow = String
 newtype TicketError = TicketError Text deriving (Eq, Ord, Show)
 type Parser = Parsec TicketError Text
 
-groupTickets :: [Ticket] -> Map EventSectionRow (NonEmpty Ticket)
+groupTickets :: [Ticket] -> Map EventSectionRow [Ticket]
 groupTickets = foldr insertTicket M.empty
   where
-    prepend (new :| _) old = new <| old
     insertTicket t@(Ticket e s r _ _) =
-      M.insertWith prepend (e ++ s ++ r) (t :| [])
+      M.insertWith (++) (e ++ s ++ r) [t]
 
 ticketParser :: Parser Ticket
 ticketParser = do
@@ -43,8 +41,8 @@ ticketParser = do
 parseTicket :: String -> Maybe Ticket
 parseTicket = parseMaybe ticketParser . T.pack
 
-sequences :: NonEmpty Ticket -> [[Ticket]]
-sequences = groupSequential . L.sortOn startseat . NE.toList
+sequences :: [Ticket] -> [[Ticket]]
+sequences = groupSequential . L.sortOn startseat
 
 groupSequential :: [Ticket] -> [[Ticket]]
 groupSequential = foldr go [[]]
@@ -96,6 +94,7 @@ unsafeJoinTicket (Ticket e s r ss se) (Ticket _ _ _ ss' se')
   | (ss' - 1) == se  = Ticket e s r ss  se'
 
 
+sample :: [Text]
 sample = [ "supersonic,B,1,3,4"
          , "supersonic,E,1,13,13"
          , "supersonic,B,1,5,6"
@@ -105,6 +104,7 @@ sample = [ "supersonic,B,1,3,4"
          , "supersonic,D,2,10,10"
          ]
 
+sample2 :: [Text]
 sample2 = [ "supersonic,B,1,1,1"
           , "supersonic,B,1,2,2"
           , "supersonic,B,1,3,3"
@@ -117,8 +117,8 @@ n = L.nub
 f1 = L.foldl1'
 cm = catMaybes
 
-parsed = cm $ parseMaybe ticketParser . T.pack <$> sample2
-seqs = sequences . NE.fromList $ parsed
+parsed = cm $ parseMaybe ticketParser <$> sample2
+seqs = sequences $ parsed
 p = joinNonConsecutive $ permuteConsecutive seqs
 
 --
