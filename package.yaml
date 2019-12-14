@@ -11,9 +11,12 @@ description:         Please see the README on GitHub at <https://github.com/jona
 dependencies:
 - base >= 4.7 && < 5
 - containers
+- criterion
+- directory
 - hspec
 - hspec-discover
-- criterion
+- text
+- megaparsec
 
 library:
   source-dirs: src
@@ -21,7 +24,7 @@ library:
   - -Wall
 
 executables:
-  seat-sorter-exe:
+  seat-sorter:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
