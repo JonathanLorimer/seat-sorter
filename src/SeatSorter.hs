@@ -54,6 +54,9 @@ groupSequential = foldr go [[]]
     isSequential t1 t2 =  endseat t1 + 1 == startseat t2
                           || startseat t1 == (endseat t2 + 1)
 
+-- R1[1,2,3][6]
+-- R2[1,2,3]
+-- R1+R2[1,2,3]
 
 contPerms :: forall a . [a] -> [[[a]]]
 contPerms [] = []
@@ -65,6 +68,11 @@ contPerms x = concatMap (\(y:z:_) -> [y,z] : ((y:) <$> (contPerms z))) selection
     trim ys = L.tail . L.init $ ys
     selections :: [[[a]]]
     selections = zipWith (\i j -> [i, j]) (trim $ L.inits x) (trim $ L.tails x)
+
+
+-- $> contPerms [1,2,3,4]
+-- [(1,1),(1,2),(1,3),(1,4)
+-- ,(2,1),(2,2),(2,3),(2,4)]
 
 permuteConsecutive :: [[Ticket]] -> [[[Ticket]]]
 permuteConsecutive xs = map (map (map foldTickets)) permutations
@@ -111,7 +119,7 @@ sample2 = [ "supersonic,B,1,1,1"
           , "supersonic,B,1,4,4"
           , "supersonic,B,1,7,7"
           ]
-
+            {-
 n :: Eq a => [a] -> [a]
 n = L.nub
 f1 = L.foldl1'
@@ -120,11 +128,8 @@ cm = catMaybes
 parsed = cm $ parseMaybe ticketParser <$> sample2
 seqs = sequences $ parsed
 p = joinNonConsecutive $ permuteConsecutive seqs
-
+-}
 --
--- $> p
---
--- $> n $ (contPerms [1,2,3,4] :: [[[Integer]]])
 
 
 
